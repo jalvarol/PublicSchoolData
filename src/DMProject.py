@@ -12,12 +12,12 @@ except:
     pass
 
 #These files have footers
-df_Expend = pd.read_csv('Expenditure_Data.txt', skipfooter = 5, engine = 'python')
-df_Salary = pd.read_csv('Salary_Data.txt', skipfooter = 5, engine = 'python')
-df_CA = pd.read_csv('Chronic_Absent.txt', sep = '|')
+df_Expend = pd.read_csv('data/Expenditure_Data.txt', skipfooter = 5, engine = 'python')
+df_Salary = pd.read_csv('data/Salary_Data.txt', skipfooter = 5, engine = 'python')
+df_CA = pd.read_csv('data/Chronic_Absent.txt', sep = '|')
 
 #Does not contain footers
-df_Test_Scores = pd.read_csv('Test_Score_Results.txt', sep = '\t')
+df_Test_Scores = pd.read_csv('data/Test_Score_Results.txt', sep = '\t')
 
 
 #Updating Columns to be the same format
