@@ -7,17 +7,17 @@ import numpy as np
 import os
 
 #Reading in Data
-try: os.chdir('GroupMining')    
+try: os.chdir('data')    
 except:
     pass
 
 #These files have footers
-df_Expend = pd.read_csv('data/Expenditure_Data.txt', skipfooter = 5, engine = 'python')
-df_Salary = pd.read_csv('data/Salary_Data.txt', skipfooter = 5, engine = 'python')
-df_CA = pd.read_csv('data/Chronic_Absent.txt', sep = '|')
+df_Expend = pd.read_csv('../data/Expenditure_Data.txt', skipfooter = 5, engine = 'python')
+df_Salary = pd.read_csv('../data/Salary_Data.txt', skipfooter = 5, engine = 'python')
+df_CA = pd.read_csv('../data/Chronic_Absent.txt', sep = '|')
 
 #Does not contain footers
-df_Test_Scores = pd.read_csv('data/Test_Score_Results.txt', sep = '\t')
+df_Test_Scores = pd.read_csv('../data/Test_Score_Results.txt', sep = '\t')
 
 
 #Updating Columns to be the same format
@@ -39,7 +39,7 @@ df_Salary = df_Salary[['CDSCODE', 'BTCHSAL', 'MTCHSAL','HTCHSAL']]
 df_Test_Scores = df_Test_Scores[['CDSCODE','SELA_Y2', 'SMATH_Y2','DELA_Y2','DMATH_Y2']]
 
 #1 Value PERSD
-df_SED = pd.read_csv('Subgroup_Data.txt', usecols = ['CDSCODE', 'PERSD'])
+df_SED = pd.read_csv('../data/Subgroup_Data.txt', usecols = ['CDSCODE', 'PERSD'])
 
 # Values RALL, REL,RSED
 df_CA = df_CA[['CDSCODE', 'RALL', 'REL', 'RSED', ]]
