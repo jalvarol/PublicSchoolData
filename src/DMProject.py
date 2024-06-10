@@ -74,7 +74,7 @@ columns_to_normalize = ['DSAL', 'STSAL', 'BTCHSAL', 'MTCHSAL', 'HTCHSAL']
 #Normalize
 df_merge[columns_to_normalize] = scaler.fit_transform(df_merge[columns_to_normalize])
 
-display(df_merge.corr())
+print(df_merge.corr())
 
 plt.matshow(df_merge.corr())
 plt.show()
