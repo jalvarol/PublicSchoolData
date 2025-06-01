@@ -26,34 +26,14 @@ From our correlation analysis:
    # Run the basic analysis
    ./run.sh
    
-   # Run with additional explanatory materials
-   ./run.sh --with-report
+   # Run with HTML report
+   ./run.sh --html-report
    ```
 
 3. **Output**
-   All visualizations are saved to the `output` directory and will be displayed automatically if your system supports it.
+   All visualizations are saved to the `output` directory. HTML reports can be viewed in any web browser.
 
-## Troubleshooting
-
-### Missing Tkinter
-If you get an error about missing `_tkinter` module:
-
-For macOS:
-```bash
-brew install python-tk@3.13  # Adjust version as needed
-```
-
-For Ubuntu/Debian:
-```bash
-sudo apt-get install python3-tk
-```
-
-For Fedora:
-```bash
-sudo dnf install python3-tkinter
-```
-
-However, the script is set up to use the 'Agg' backend which doesn't require Tkinter, so it should work without any GUI requirements.
+   The project uses Matplotlib's 'Agg' backend, which is a non-interactive backend that generates visualizations without requiring a display. This makes the code run smoothly in environments without a GUI, like remote servers or CI pipelines.
 
 ## Data Variables
 
