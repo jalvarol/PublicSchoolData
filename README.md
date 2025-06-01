@@ -1,2 +1,64 @@
-# PublicSchoolData
-This repository contains a project that uses public school data and utilizes current tools to analyze student test scores to potentially find correlations. The data is from public records that contain SARC, also known as a School Accountability Report Card. These cards contain unique information such as student test scores, socioeconomic status, absentee rate, and many others. 
+# Public School Data Analysis
+
+This project analyzes California public school data including expenditures, salaries, test scores, and chronic absence rates to identify factors that may influence student academic performance.
+
+## Key Findings
+
+From our correlation analysis:
+
+1. **Socioeconomic Impact**: Strong negative correlation between the percentage of socioeconomically disadvantaged students and test scores
+2. **Teacher Salary Effect**: Modest positive correlation between teacher salaries and test scores
+3. **Chronic Absence Impact**: Negative correlation between absence rates and test scores
+4. **Consistent Patterns**: Salary structures and absence rates show strong internal correlations across categories
+
+## Visualization Examples
+
+The analysis produces several visualizations:
+
+- Correlation matrix heatmap
+- Test score relationship plots
+- Socioeconomic status impact charts
+- Variable distributions
+- Advanced explainable visualizations with annotations
+
+![Correlation Matrix Example](output/correlation_matrix.png)
+
+## Setup and Running the Analysis
+
+1. **Install Dependencies**
+   ```bash
+   pip install pandas numpy matplotlib scikit-learn seaborn
+   ```
+
+2. **Run the Analysis**
+   ```bash
+   # Make the script executable if needed
+   chmod +x run.sh
+   
+   # Run the basic analysis
+   ./run.sh
+   
+   # Run with additional explanatory materials
+   ./run.sh --with-report
+   ```
+
+3. **Output**
+   All visualizations are saved to the `output` directory.
+
+## Data Variables
+
+- **CDSCODE**: Unique identifier for California schools
+- **DSAL, STSAL**: District and State Salary (Normalized)
+- **BTCHSAL, MTCHSAL, HTCHSAL**: Beginning, Mid-career, and High-level Teacher Salary (Normalized)
+- **SELA_Y2, SMATH_Y2**: State English Language Arts and Mathematics Test Scores
+- **DELA_Y2, DMATH_Y2**: District English Language Arts and Mathematics Test Scores
+- **PERSD**: Percentage of Socioeconomically Disadvantaged Students
+- **RALL, REL, RSED**: Chronic Absence Rate for All Students, English Learners, and Socioeconomically Disadvantaged Students
+
+## Insights for Educational Policy
+
+These findings may help inform policy decisions related to:
+- Resource allocation to schools with high socioeconomically disadvantaged populations
+- Teacher compensation strategies
+- Attendance improvement initiatives
+- Targeted interventions for specific student populations
