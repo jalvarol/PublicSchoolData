@@ -1,86 +1,35 @@
 #CSCI 185 - Web and Data Mining
 
-from sklearn.preprocessing import MinMaxScaler
+#Use Agg backend which doesn't require a GUI
+import matplotlib
+matplotlib.use('Agg')  # Set this before importing pyplot
+
 import matplotlib.pyplot as plt
 import pandas as pd
 import numpy as np
 import os
 
-#Reading in Data
-try: os.chdir('data')    
-except:
-    pass
+# Import the data preparation module
+from data_preparation import load_data
 
-#These files have footers
-df_Expend = pd.read_csv('../data/Expenditure_Data.txt', skipfooter = 5, engine = 'python')
-df_Salary = pd.read_csv('../data/Salary_Data.txt', skipfooter = 5, engine = 'python')
-df_CA = pd.read_csv('../data/Chronic_Absent.txt', sep = '|')
+# Create output directory at the beginning to avoid FileNotFoundError
+os.makedirs("../output", exist_ok=True)
 
-#Does not contain footers
-df_Test_Scores = pd.read_csv('../data/Test_Score_Results.txt', sep = '\t')
+# Load and prepare data using the data_preparation module
+print("Loading and preparing data...")
+df_merge = load_data()
 
+if df_merge is None:
+    print("Error loading data. Please check the logs for details.")
+    exit(1)
 
-#Updating Columns to be the same format
-df_Salary.columns = df_Salary.columns.str.upper()
-df_Expend.columns = df_Expend.columns.str.upper()
-df_Test_Scores.columns = df_Test_Scores.columns.str.upper()
-df_CA.columns = df_CA.columns.str.upper()
-
-#Pre-Processing
-
-#Data Reduction
-#3 Values STEXP, DSAL, STSAL
-df_Expend.drop(['SARCYEAR','C', 'D', 'S', 'STEXP'], axis = 1,inplace=True)
-
-#3 Values BTCHSAL, MTCHSAL, HTCHSAL
-df_Salary = df_Salary[['CDSCODE', 'BTCHSAL', 'MTCHSAL','HTCHSAL']]
-
-#4 Values SELA_Y2, SMATH_Y2, DELA_Y2, DMATH_Y2
-df_Test_Scores = df_Test_Scores[['CDSCODE','SELA_Y2', 'SMATH_Y2','DELA_Y2','DMATH_Y2']]
-
-#1 Value PERSD
-df_SED = pd.read_csv('../data/Subgroup_Data.txt', usecols = ['CDSCODE', 'PERSD'])
-
-# Values RALL, REL,RSED
-df_CA = df_CA[['CDSCODE', 'RALL', 'REL', 'RSED', ]]
-
-#Since we are looking for correlations for test scores we use NaN for missing test score
-#values. When we merge, we will remove any row that has NaN values
-df_Test_Scores.replace(['--','0'], np.nan, inplace=True)
-
-#Filling in NaN values since there is a possibility there are test scores but 0 SED #students
-df_SED.replace([np.nan], 0, inplace=True)
-
-#Filling NaN values with Means
-df_Expend.fillna(df_Expend.mean(numeric_only = True),inplace=True)
-df_Salary.fillna(df_Salary.mean(numeric_only = True),inplace=True)
-
-#List of all Data Frames
-#Keep adding data frames to here after reduction
-data_frames = [df_Expend, df_Salary, df_Test_Scores, df_SED, df_CA]
-
-#Merging all DataFrames
-df_merge = df_Expend.merge(df_Salary).merge(df_Test_Scores).merge(df_SED).merge(df_CA)
-
-#Removing NaN values
-df_merge.dropna(inplace=True)
-
-#Normalizing attributes with values in the thousands
-scaler = MinMaxScaler()
-
-#Insert Attributes to Normalize
-columns_to_normalize = ['DSAL', 'STSAL', 'BTCHSAL', 'MTCHSAL', 'HTCHSAL']
-
-#Normalize
-df_merge[columns_to_normalize] = scaler.fit_transform(df_merge[columns_to_normalize])
+# Print data types to verify they're all numeric
+print("Verifying data types after processing:")
+print(df_merge.dtypes)
 
 # Adding a main guard to make the script directly executable
 if __name__ == "__main__":
     print("Running Public School Data Analysis...")
-    
-    # Create output directory at the beginning to avoid FileNotFoundError
-    import os
-    os.makedirs("../output", exist_ok=True)
     
     # Set a more professional style for plots
     plt.style.use('seaborn-v0_8-whitegrid')
@@ -111,118 +60,273 @@ if __name__ == "__main__":
     
     plt.tight_layout()
     plt.savefig("../output/correlation_matrix.png", dpi=300)
-    plt.show()
+    plt.close()  # Close the figure to free memory
     
     # 2. Create a pair plot to visualize relationships between test scores and key factors
-    plt.figure(figsize=(20, 15))
+    # Fix the scatter plots - better axis formatting and jitter to reveal density
+    fig, axs = plt.subplots(2, 2, figsize=(20, 15))
     
-    # Test scores vs Teacher salaries
-    plt.subplot(2, 2, 1)
-    plt.scatter(df_merge['HTCHSAL'], df_merge['SMATH_Y2'], alpha=0.5, c='blue')
-    plt.title('High Teacher Salary vs. State Math Scores', fontsize=14)
-    plt.xlabel('High Teacher Salary (Normalized)')
-    plt.ylabel('State Math Scores')
-    plt.grid(True, alpha=0.3)
+    # Test scores vs Teacher salaries with improved readability
+    axs[0,0].scatter(df_merge['HTCHSAL'], df_merge['SMATH_Y2'], alpha=0.4, c='blue', s=15)
+    axs[0,0].set_title('High Teacher Salary vs. State Math Scores', fontsize=16)
+    axs[0,0].set_xlabel('High Teacher Salary (Normalized)', fontsize=12)
+    axs[0,0].set_ylabel('State Math Scores', fontsize=12)
+    axs[0,0].grid(True, alpha=0.3)
+    axs[0,0].tick_params(axis='both', which='major', labelsize=10)
     
-    plt.subplot(2, 2, 2)
-    plt.scatter(df_merge['HTCHSAL'], df_merge['SELA_Y2'], alpha=0.5, c='green')
-    plt.title('High Teacher Salary vs. State ELA Scores', fontsize=14)
-    plt.xlabel('High Teacher Salary (Normalized)')
-    plt.ylabel('State ELA Scores')
-    plt.grid(True, alpha=0.3)
+    # Add a trend line
+    z = np.polyfit(df_merge['HTCHSAL'], df_merge['SMATH_Y2'], 1)
+    p = np.poly1d(z)
+    axs[0,0].plot(np.linspace(0, 1, 100), p(np.linspace(0, 1, 100)), 
+                 "r-", linewidth=2, label=f'Trend (r={df_merge["HTCHSAL"].corr(df_merge["SMATH_Y2"]):.2f})')
+    axs[0,0].legend(fontsize=10)
     
-    # Test scores vs Chronic Absence Rate
-    plt.subplot(2, 2, 3)
-    plt.scatter(df_merge['RALL'], df_merge['SMATH_Y2'], alpha=0.5, c='red')
-    plt.title('Chronic Absence Rate vs. State Math Scores', fontsize=14)
-    plt.xlabel('Chronic Absence Rate (All Students)')
-    plt.ylabel('State Math Scores')
-    plt.grid(True, alpha=0.3)
+    axs[0,1].scatter(df_merge['HTCHSAL'], df_merge['SELA_Y2'], alpha=0.4, c='green', s=15)
+    axs[0,1].set_title('High Teacher Salary vs. State ELA Scores', fontsize=16)
+    axs[0,1].set_xlabel('High Teacher Salary (Normalized)', fontsize=12)
+    axs[0,1].set_ylabel('State ELA Scores', fontsize=12)
+    axs[0,1].grid(True, alpha=0.3)
+    axs[0,1].tick_params(axis='both', which='major', labelsize=10)
     
-    plt.subplot(2, 2, 4)
-    plt.scatter(df_merge['RALL'], df_merge['SELA_Y2'], alpha=0.5, c='purple')
-    plt.title('Chronic Absence Rate vs. State ELA Scores', fontsize=14)
-    plt.xlabel('Chronic Absence Rate (All Students)')
-    plt.ylabel('State ELA Scores')
-    plt.grid(True, alpha=0.3)
+    # Add a trend line
+    z = np.polyfit(df_merge['HTCHSAL'], df_merge['SELA_Y2'], 1)
+    p = np.poly1d(z)
+    axs[0,1].plot(np.linspace(0, 1, 100), p(np.linspace(0, 1, 100)), 
+                 "r-", linewidth=2, label=f'Trend (r={df_merge["HTCHSAL"].corr(df_merge["SELA_Y2"]):.2f})')
+    axs[0,1].legend(fontsize=10)
+    
+    # Test scores vs Chronic Absence Rate with improved formatting
+    axs[1,0].scatter(df_merge['RALL'], df_merge['SMATH_Y2'], alpha=0.4, c='red', s=15)
+    axs[1,0].set_title('Chronic Absence Rate vs. State Math Scores', fontsize=16)
+    axs[1,0].set_xlabel('Chronic Absence Rate (All Students %)', fontsize=12)
+    axs[1,0].set_ylabel('State Math Scores', fontsize=12)
+    axs[1,0].grid(True, alpha=0.3)
+    axs[1,0].tick_params(axis='both', which='major', labelsize=10)
+    
+    # Add a trend line
+    z = np.polyfit(df_merge['RALL'], df_merge['SMATH_Y2'], 1)
+    p = np.poly1d(z)
+    axs[1,0].plot(np.linspace(0, 100, 100), p(np.linspace(0, 100, 100)), 
+                "r-", linewidth=2, label=f'Trend (r={df_merge["RALL"].corr(df_merge["SMATH_Y2"]):.2f})')
+    axs[1,0].legend(fontsize=10)
+    
+    axs[1,1].scatter(df_merge['RALL'], df_merge['SELA_Y2'], alpha=0.4, c='purple', s=15)
+    axs[1,1].set_title('Chronic Absence Rate vs. State ELA Scores', fontsize=16)
+    axs[1,1].set_xlabel('Chronic Absence Rate (All Students %)', fontsize=12)
+    axs[1,1].set_ylabel('State ELA Scores', fontsize=12)
+    axs[1,1].grid(True, alpha=0.3)
+    axs[1,1].tick_params(axis='both', which='major', labelsize=10)
+    
+    # Add a trend line
+    z = np.polyfit(df_merge['RALL'], df_merge['SELA_Y2'], 1)
+    p = np.poly1d(z)
+    axs[1,1].plot(np.linspace(0, 100, 100), p(np.linspace(0, 100, 100)), 
+                "r-", linewidth=2, label=f'Trend (r={df_merge["RALL"].corr(df_merge["SELA_Y2"]):.2f})')
+    axs[1,1].legend(fontsize=10)
     
     plt.tight_layout()
     plt.savefig("../output/test_scores_relationships.png", dpi=300)
-    plt.show()
+    plt.close()  # Close the figure
     
-    # 3. Bar charts for comparing average test scores by socioeconomic factors
+    # 3. Bar charts for comparing average test scores by socioeconomic factors - Fix empty bars
     plt.figure(figsize=(14, 10))
     
-    # Create SED categories for grouping
-    df_merge['SED_Category'] = pd.cut(df_merge['PERSD'], 
+    # Fix the PERSD values - ensure they're in 0-1 range for proper categorization
+    # Check if PERSD is already in percentage form (>1) and convert if needed
+    if df_merge['PERSD'].max() > 1:
+        print("PERSD appears to be in percentage form (>1), converting to 0-1 scale for categorization")
+        df_merge['PERSD_normalized'] = df_merge['PERSD'] / 100
+    else:
+        df_merge['PERSD_normalized'] = df_merge['PERSD']
+    
+    # Create SED categories using the normalized values
+    df_merge['SED_Category'] = pd.cut(df_merge['PERSD_normalized'], 
                                       bins=[0, 0.25, 0.5, 0.75, 1.0], 
-                                      labels=['0-25%', '25-50%', '50-75%', '75-100%'])
+                                      labels=['0-25%', '25-50%', '50-75%', '75-100%'],
+                                      include_lowest=True)
+    
+    # Verify we have data in each category
+    sed_counts = df_merge['SED_Category'].value_counts()
+    print("SED Category counts:")
+    print(sed_counts)
     
     # Group by SED category and calculate mean test scores
-    sed_groups = df_merge.groupby('SED_Category')[['SELA_Y2', 'SMATH_Y2', 'DELA_Y2', 'DMATH_Y2']].mean()
+    sed_groups = df_merge.groupby('SED_Category', observed=True)[['SELA_Y2', 'SMATH_Y2', 'DELA_Y2', 'DMATH_Y2']].mean()
+    print("Mean scores by SED category:")
+    print(sed_groups)
     
-    plt.subplot(2, 1, 1)
-    sed_groups[['SELA_Y2', 'SMATH_Y2']].plot(kind='bar', ax=plt.gca())
-    plt.title('State Test Scores by Socioeconomically Disadvantaged Student Percentage', fontsize=14)
-    plt.xlabel('Percentage of Socioeconomically Disadvantaged Students')
-    plt.ylabel('Average Test Score')
-    plt.grid(True, axis='y', alpha=0.3)
-    plt.legend(['ELA Scores', 'Math Scores'])
+    # Create clearer bar charts with values
+    fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(14, 12))
     
-    plt.subplot(2, 1, 2)
-    sed_groups[['DELA_Y2', 'DMATH_Y2']].plot(kind='bar', ax=plt.gca())
-    plt.title('District Test Scores by Socioeconomically Disadvantaged Student Percentage', fontsize=14)
-    plt.xlabel('Percentage of Socioeconomically Disadvantaged Students')
-    plt.ylabel('Average Test Score')
-    plt.grid(True, axis='y', alpha=0.3)
-    plt.legend(['ELA Scores', 'Math Scores'])
+    # State scores
+    state_bars = sed_groups[['SELA_Y2', 'SMATH_Y2']].plot(kind='bar', ax=ax1, rot=0, colormap='viridis')
+    ax1.set_title('State Test Scores by Socioeconomically Disadvantaged Student Percentage', fontsize=16)
+    ax1.set_xlabel('Percentage of Socioeconomically Disadvantaged Students', fontsize=12)
+    ax1.set_ylabel('Average Test Score', fontsize=12)
+    ax1.grid(True, axis='y', alpha=0.3)
+    ax1.legend(['ELA Scores', 'Math Scores'], fontsize=10)
+    ax1.tick_params(axis='both', which='major', labelsize=10)
+    
+    # Add value labels
+    for container in ax1.containers:
+        ax1.bar_label(container, fmt='%.1f', fontsize=9)
+    
+    # District scores
+    district_bars = sed_groups[['DELA_Y2', 'DMATH_Y2']].plot(kind='bar', ax=ax2, rot=0, colormap='viridis')
+    ax2.set_title('District Test Scores by Socioeconomically Disadvantaged Student Percentage', fontsize=16)
+    ax2.set_xlabel('Percentage of Socioeconomically Disadvantaged Students', fontsize=12)
+    ax2.set_ylabel('Average Test Score', fontsize=12)
+    ax2.grid(True, axis='y', alpha=0.3)
+    ax2.legend(['ELA Scores', 'Math Scores'], fontsize=10)
+    ax2.tick_params(axis='both', which='major', labelsize=10)
+    
+    # Add value labels
+    for container in ax2.containers:
+        ax2.bar_label(container, fmt='%.1f', fontsize=9)
     
     plt.tight_layout()
     plt.savefig("../output/test_scores_by_sed.png", dpi=300)
-    plt.show()
+    plt.close()
     
-    # 4. Distribution of key variables
-    plt.figure(figsize=(16, 12))
+    # 4. Distribution of key variables - Fix the histogram visualizations
+    fig, axs = plt.subplots(2, 3, figsize=(16, 12))
     
-    # Teacher salary distribution
-    plt.subplot(2, 3, 1)
-    df_merge['BTCHSAL'].hist(bins=30, alpha=0.7)
-    plt.title('Beginning Teacher Salary Distribution', fontsize=12)
-    plt.xlabel('Normalized Salary')
-    plt.grid(True, alpha=0.3)
+    # Teacher salary distribution - improved formatting
+    axs[0,0].hist(df_merge['BTCHSAL'], bins=20, alpha=0.7, color='#1f77b4')
+    axs[0,0].set_title('Beginning Teacher Salary Distribution', fontsize=12)
+    axs[0,0].set_xlabel('Normalized Salary', fontsize=10)
+    axs[0,0].set_ylabel('Number of Schools', fontsize=10)
+    axs[0,0].grid(True, alpha=0.3)
+    axs[0,0].tick_params(axis='both', which='major', labelsize=9)
     
-    plt.subplot(2, 3, 2)
-    df_merge['MTCHSAL'].hist(bins=30, alpha=0.7, color='green')
-    plt.title('Mid-Career Teacher Salary Distribution', fontsize=12)
-    plt.xlabel('Normalized Salary')
-    plt.grid(True, alpha=0.3)
+    axs[0,1].hist(df_merge['MTCHSAL'], bins=20, alpha=0.7, color='green')
+    axs[0,1].set_title('Mid-Career Teacher Salary Distribution', fontsize=12)
+    axs[0,1].set_xlabel('Normalized Salary', fontsize=10)
+    axs[0,1].set_ylabel('Number of Schools', fontsize=10)
+    axs[0,1].grid(True, alpha=0.3)
+    axs[0,1].tick_params(axis='both', which='major', labelsize=9)
     
-    plt.subplot(2, 3, 3)
-    df_merge['HTCHSAL'].hist(bins=30, alpha=0.7, color='red')
-    plt.title('High-Level Teacher Salary Distribution', fontsize=12)
-    plt.xlabel('Normalized Salary')
-    plt.grid(True, alpha=0.3)
+    axs[0,2].hist(df_merge['HTCHSAL'], bins=20, alpha=0.7, color='red')
+    axs[0,2].set_title('High-Level Teacher Salary Distribution', fontsize=12)
+    axs[0,2].set_xlabel('Normalized Salary', fontsize=10)
+    axs[0,2].set_ylabel('Number of Schools', fontsize=10)
+    axs[0,2].grid(True, alpha=0.3)
+    axs[0,2].tick_params(axis='both', which='major', labelsize=9)
     
     # Test score distributions
-    plt.subplot(2, 3, 4)
-    df_merge['SMATH_Y2'].hist(bins=30, alpha=0.7, color='purple')
-    plt.title('State Math Score Distribution', fontsize=12)
-    plt.xlabel('Score')
-    plt.grid(True, alpha=0.3)
+    axs[1,0].hist(df_merge['SMATH_Y2'].astype(float), bins=20, alpha=0.7, color='purple')
+    axs[1,0].set_title('State Math Score Distribution', fontsize=12)
+    axs[1,0].set_xlabel('Score', fontsize=10)
+    axs[1,0].set_ylabel('Number of Schools', fontsize=10)
+    axs[1,0].grid(True, alpha=0.3)
+    axs[1,0].tick_params(axis='both', which='major', labelsize=9)
     
-    plt.subplot(2, 3, 5)
-    df_merge['SELA_Y2'].hist(bins=30, alpha=0.7, color='orange')
-    plt.title('State ELA Score Distribution', fontsize=12)
-    plt.xlabel('Score')
-    plt.grid(True, alpha=0.3)
+    axs[1,1].hist(df_merge['SELA_Y2'].astype(float), bins=20, alpha=0.7, color='orange')
+    axs[1,1].set_title('State ELA Score Distribution', fontsize=12)
+    axs[1,1].set_xlabel('Score', fontsize=10)
+    axs[1,1].set_ylabel('Number of Schools', fontsize=10)
+    axs[1,1].grid(True, alpha=0.3)
+    axs[1,1].tick_params(axis='both', which='major', labelsize=9)
     
-    plt.subplot(2, 3, 6)
-    df_merge['PERSD'].hist(bins=30, alpha=0.7, color='blue')
-    plt.title('Distribution of Socioeconomically Disadvantaged %', fontsize=12)
-    plt.xlabel('Proportion of Students')
-    plt.grid(True, alpha=0.3)
+    # Fix the SED distribution visualization
+    axs[1,2].hist(df_merge['PERSD'].astype(float) * 100, bins=20, alpha=0.7, color='blue')
+    axs[1,2].set_title('Distribution of Socioeconomically Disadvantaged %', fontsize=12)
+    axs[1,2].set_xlabel('Percentage of Students', fontsize=10)
+    axs[1,2].set_ylabel('Number of Schools', fontsize=10)
+    axs[1,2].grid(True, alpha=0.3)
+    axs[1,2].tick_params(axis='both', which='major', labelsize=9)
     
     plt.tight_layout()
     plt.savefig("../output/variable_distributions.png", dpi=300)
-    plt.show()
+    plt.close()
+    
+    # 5. Create a more clear relationship visualization between SED and test scores
+    plt.figure(figsize=(10, 8))
+    
+    # Test the data directly before any transformations
+    print("\n===== DATA VERIFICATION FOR SED vs MATH SCORES =====")
+    print(f"Number of rows in dataframe: {len(df_merge)}")
+    
+    # Check for any issues in the data
+    print("\nData type of PERSD:", df_merge['PERSD'].dtype)
+    print("Data type of SMATH_Y2:", df_merge['SMATH_Y2'].dtype)
+    print(f"PERSD min: {df_merge['PERSD'].min()}, max: {df_merge['PERSD'].max()}")
+    
+    # Create a clean subset of only the needed data
+    plot_df = df_merge[['PERSD', 'SMATH_Y2']].copy()
+    
+    # Fix PERSD scaling if needed - ensure it's in 0-100 percentage form for plotting
+    # The PERSD (Percentage of Socioeconomically Disadvantaged) column may be in different formats
+    # This code standardizes it to ensure consistent visualization and analysis
+    if plot_df['PERSD'].max() > 100:
+        print("WARNING: PERSD values appear to exceed 100% - scaling down")
+        plot_df['PERSD_PCT'] = plot_df['PERSD'].clip(upper=100)  # Cap at 100%
+    elif plot_df['PERSD'].max() <= 1:
+        print("WARNING: PERSD values appear to be in 0-1 scale - converting to percentage")
+        plot_df['PERSD_PCT'] = plot_df['PERSD'] * 100
+    else:
+        # Already in percentage form (1-100)
+        plot_df['PERSD_PCT'] = plot_df['PERSD']
+    
+    # Remove any rows with NaN values
+    print(f"\nRows before NaN removal: {len(plot_df)}")
+    plot_df = plot_df.dropna()
+    print(f"Rows after NaN removal: {len(plot_df)}")
+    
+    # Check if we still have data after filtering
+    if len(plot_df) == 0:
+        print("ERROR: No valid data points after filtering!")
+        plt.text(50, 50, "NO VALID DATA AVAILABLE", 
+                 ha='center', va='center', fontsize=20, color='red')
+        plt.title('No Data Available for Visualization', fontsize=16)
+    else:
+        # Print data range to understand the scales
+        print(f"\nPERSD range: {plot_df['PERSD_PCT'].min():.2f}% to {plot_df['PERSD_PCT'].max():.2f}%")
+        print(f"SMATH_Y2 range: {plot_df['SMATH_Y2'].min():.2f} to {plot_df['SMATH_Y2'].max():.2f}")
+        
+        # Generate the plot with clearer visualization
+        # Use dark edge colors to make points more visible and increase size
+        plt.scatter(plot_df['PERSD_PCT'], plot_df['SMATH_Y2'], 
+                  s=80,                 # Larger markers
+                  alpha=0.6,            # Semi-transparent
+                  color='blue',         # Blue fill
+                  edgecolor='black',    # Black border
+                  linewidth=1,          # Border width
+                  label='Schools')      # Label for legend
+        
+        # Calculate and add regression line
+        z = np.polyfit(plot_df['PERSD_PCT'], plot_df['SMATH_Y2'], 1)
+        p = np.poly1d(z)
+        x_range = np.linspace(plot_df['PERSD_PCT'].min(), plot_df['PERSD_PCT'].max(), 100)
+        
+        plt.plot(x_range, p(x_range), 'r-', linewidth=2,
+                label=f'Trend Line (y={z[0]:.3f}x+{z[1]:.1f})')
+        
+        # Calculate correlation
+        corr = plot_df['PERSD_PCT'].corr(plot_df['SMATH_Y2'])
+        print(f"\nCorrelation coefficient: {corr:.4f}")
+        
+        # Add correlation text
+        plt.annotate(f"Correlation: {corr:.2f}",
+                    xy=(0.05, 0.95), 
+                    xycoords='axes fraction',
+                    bbox=dict(boxstyle="round,pad=0.3", fc="white", alpha=0.8),
+                    fontsize=12)
+        
+        plt.title('Relationship Between Socioeconomic Status and Math Scores', fontsize=16)
+        plt.xlabel('Percentage of Socioeconomically Disadvantaged Students', fontsize=12)
+        plt.ylabel('State Math Scores', fontsize=12)
+        plt.grid(True, alpha=0.3)
+        plt.legend(fontsize=10)
+    
+    # Set proper x-axis limits
+    plt.xlim(0, 100)
+    
+    plt.tight_layout()
+    plt.savefig("../output/sed_mathscores_relationship.png", dpi=300)
+    plt.close()
+
+    print("All visualizations have been saved to the output directory.")
+    
+plt.ioff()  # Turn off interactive mode at the end
 

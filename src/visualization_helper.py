@@ -12,7 +12,18 @@ import os
 
 def create_output_dir():
     """Create output directory if it doesn't exist"""
+    # Create both possible output directories to ensure compatibility
     os.makedirs("../output", exist_ok=True)
+    os.makedirs("output", exist_ok=True)
+    
+    # Check which directory exists and is writable
+    if os.access("../output", os.W_OK):
+        return "../output"
+    elif os.access("output", os.W_OK):
+        return "output"
+    else:
+        print("WARNING: Could not create or access output directory")
+        return None
 
 def plot_top_correlations(df, target_col, n=10):
     """
@@ -27,6 +38,7 @@ def plot_top_correlations(df, target_col, n=10):
     n : int
         Number of top correlations to display
     """
+    output_dir = create_output_dir()
     plt.figure(figsize=(12, 8))
     
     # Calculate correlations with target column
@@ -45,7 +57,8 @@ def plot_top_correlations(df, target_col, n=10):
     plt.title(f'Top {n} Correlations with {target_col}', fontsize=16)
     plt.xlabel('Correlation Coefficient')
     plt.tight_layout()
-    plt.savefig(f"../output/top_correlations_{target_col}.png", dpi=300)
+    if output_dir:
+        plt.savefig(f"{output_dir}/top_correlations_{target_col}.png", dpi=300)
     plt.show()
 
 def plot_regression_analysis(df, x_col, y_col, color='blue'):
@@ -63,6 +76,7 @@ def plot_regression_analysis(df, x_col, y_col, color='blue'):
     color : str
         Color for the plot points
     """
+    output_dir = create_output_dir()
     plt.figure(figsize=(10, 6))
     
     # Create scatter plot
@@ -70,13 +84,14 @@ def plot_regression_analysis(df, x_col, y_col, color='blue'):
     
     # Add title and labels with correlation coefficient
     corr = df[[x_col, y_col]].corr().iloc[0,1]
-    plt.title(f'Relationship between {x_col} and {y_col} (r = {corr:.2f})', fontsize=14)
+    plt.title(f'Relationship between SHE {x_col} and {y_col} (r = {corr:.2f})', fontsize=14)
     plt.xlabel(x_col)
     plt.ylabel(y_col)
     plt.grid(True, alpha=0.3)
     
     plt.tight_layout()
-    plt.savefig(f"../output/regression_{x_col}_{y_col}.png", dpi=300)
+    if output_dir:
+        plt.savefig(f"{output_dir}/regression_{x_col}_{y_col}.png", dpi=300)
     plt.show()
 
 def create_dashboard(df):
@@ -88,6 +103,7 @@ def create_dashboard(df):
     df : pandas DataFrame
         The dataframe containing the data
     """
+    output_dir = create_output_dir()
     # Set aesthetics for all plots
     sns.set_style("whitegrid")
     plt.rcParams['font.family'] = 'sans-serif'
@@ -155,7 +171,8 @@ def create_dashboard(df):
     ax8.set_title('Chronic Absence Rate Distribution', fontsize=14)
     
     plt.tight_layout(rect=[0, 0, 1, 0.96])
-    plt.savefig("../output/school_data_dashboard.png", dpi=300)
+    if output_dir:
+        plt.savefig(f"{output_dir}/school_data_dashboard.png", dpi=300)
     plt.show()
 
 def generate_all_visualizations(df):

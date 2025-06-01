@@ -11,18 +11,6 @@ From our correlation analysis:
 3. **Chronic Absence Impact**: Negative correlation between absence rates and test scores
 4. **Consistent Patterns**: Salary structures and absence rates show strong internal correlations across categories
 
-## Visualization Examples
-
-The analysis produces several visualizations:
-
-- Correlation matrix heatmap
-- Test score relationship plots
-- Socioeconomic status impact charts
-- Variable distributions
-- Advanced explainable visualizations with annotations
-
-![Correlation Matrix Example](output/correlation_matrix.png)
-
 ## Setup and Running the Analysis
 
 1. **Install Dependencies**
@@ -43,7 +31,29 @@ The analysis produces several visualizations:
    ```
 
 3. **Output**
-   All visualizations are saved to the `output` directory.
+   All visualizations are saved to the `output` directory and will be displayed automatically if your system supports it.
+
+## Troubleshooting
+
+### Missing Tkinter
+If you get an error about missing `_tkinter` module:
+
+For macOS:
+```bash
+brew install python-tk@3.13  # Adjust version as needed
+```
+
+For Ubuntu/Debian:
+```bash
+sudo apt-get install python3-tk
+```
+
+For Fedora:
+```bash
+sudo dnf install python3-tkinter
+```
+
+However, the script is set up to use the 'Agg' backend which doesn't require Tkinter, so it should work without any GUI requirements.
 
 ## Data Variables
 
@@ -55,6 +65,16 @@ The analysis produces several visualizations:
 - **PERSD**: Percentage of Socioeconomically Disadvantaged Students
 - **RALL, REL, RSED**: Chronic Absence Rate for All Students, English Learners, and Socioeconomically Disadvantaged Students
 
+## Visualization Examples
+
+The analysis produces several informative visualizations:
+
+1. **Correlation Matrix**: A heatmap showing relationships between all variables
+2. **Test Score Relationships**: Scatter plots showing connections between teacher salaries, absence rates, and test scores
+3. **SED Impact Analysis**: Bar charts comparing test scores across different socioeconomic groups
+4. **Variable Distributions**: Histograms showing the distribution of key metrics
+5. **SED-Test Score Relationship**: Detailed analysis of the relationship between socioeconomic status and academic performance
+
 ## Insights for Educational Policy
 
 These findings may help inform policy decisions related to:
@@ -62,3 +82,5 @@ These findings may help inform policy decisions related to:
 - Teacher compensation strategies
 - Attendance improvement initiatives
 - Targeted interventions for specific student populations
+
+**Data period: 2022-23**
