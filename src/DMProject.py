@@ -3,7 +3,6 @@
 #Use Agg backend which doesn't require a GUI
 import matplotlib
 matplotlib.use('Agg')  # Set this before importing pyplot
-
 import matplotlib.pyplot as plt
 import pandas as pd
 import numpy as np
@@ -59,7 +58,7 @@ if __name__ == "__main__":
                    fontsize=7)
     
     plt.tight_layout()
-    plt.savefig("../output/correlation_matrix.png", dpi=300)
+    plt.savefig("output/correlation_matrix.png", dpi=300)
     plt.close()  # Close the figure to free memory
     
     # 2. Create a pair plot to visualize relationships between test scores and key factors
@@ -73,6 +72,7 @@ if __name__ == "__main__":
     axs[0,0].set_ylabel('State Math Scores', fontsize=12)
     axs[0,0].grid(True, alpha=0.3)
     axs[0,0].tick_params(axis='both', which='major', labelsize=10)
+    axs[0,0].set_ylim(0, 100)
     
     # Add a trend line
     z = np.polyfit(df_merge['HTCHSAL'], df_merge['SMATH_Y2'], 1)
@@ -87,6 +87,7 @@ if __name__ == "__main__":
     axs[0,1].set_ylabel('State ELA Scores', fontsize=12)
     axs[0,1].grid(True, alpha=0.3)
     axs[0,1].tick_params(axis='both', which='major', labelsize=10)
+    axs[0,1].set_ylim(0, 100)
     
     # Add a trend line
     z = np.polyfit(df_merge['HTCHSAL'], df_merge['SELA_Y2'], 1)
@@ -102,6 +103,7 @@ if __name__ == "__main__":
     axs[1,0].set_ylabel('State Math Scores', fontsize=12)
     axs[1,0].grid(True, alpha=0.3)
     axs[1,0].tick_params(axis='both', which='major', labelsize=10)
+    axs[1,0].set_ylim(0, 100)
     
     # Add a trend line
     z = np.polyfit(df_merge['RALL'], df_merge['SMATH_Y2'], 1)
@@ -116,6 +118,7 @@ if __name__ == "__main__":
     axs[1,1].set_ylabel('State ELA Scores', fontsize=12)
     axs[1,1].grid(True, alpha=0.3)
     axs[1,1].tick_params(axis='both', which='major', labelsize=10)
+    axs[1,1].set_ylim(0, 100)
     
     # Add a trend line
     z = np.polyfit(df_merge['RALL'], df_merge['SELA_Y2'], 1)
@@ -125,7 +128,7 @@ if __name__ == "__main__":
     axs[1,1].legend(fontsize=10)
     
     plt.tight_layout()
-    plt.savefig("../output/test_scores_relationships.png", dpi=300)
+    plt.savefig("output/test_scores_relationships.png", dpi=300)
     plt.close()  # Close the figure
     
     # 3. Bar charts for comparing average test scores by socioeconomic factors - Fix empty bars
@@ -160,7 +163,7 @@ if __name__ == "__main__":
     
     # State scores
     state_bars = sed_groups[['SELA_Y2', 'SMATH_Y2']].plot(kind='bar', ax=ax1, rot=0, colormap='viridis')
-    ax1.set_title('State Test Scores by Socioeconomically Disadvantaged Student Percentage', fontsize=16)
+    ax1.set_title("State Test Scores by Socioeconomically Disadvantaged Student Percentage", fontsize=16, fontweight='bold')
     ax1.set_xlabel('Percentage of Socioeconomically Disadvantaged Students', fontsize=12)
     ax1.set_ylabel('Average Test Score', fontsize=12)
     ax1.grid(True, axis='y', alpha=0.3)
@@ -173,7 +176,7 @@ if __name__ == "__main__":
     
     # District scores
     district_bars = sed_groups[['DELA_Y2', 'DMATH_Y2']].plot(kind='bar', ax=ax2, rot=0, colormap='viridis')
-    ax2.set_title('District Test Scores by Socioeconomically Disadvantaged Student Percentage', fontsize=16)
+    ax2.set_title("District Test Scores by Socioeconomically Disadvantaged Student Percentage", fontsize=16, fontweight='bold')
     ax2.set_xlabel('Percentage of Socioeconomically Disadvantaged Students', fontsize=12)
     ax2.set_ylabel('Average Test Score', fontsize=12)
     ax2.grid(True, axis='y', alpha=0.3)
@@ -185,59 +188,7 @@ if __name__ == "__main__":
         ax2.bar_label(container, fmt='%.1f', fontsize=9)
     
     plt.tight_layout()
-    plt.savefig("../output/test_scores_by_sed.png", dpi=300)
-    plt.close()
-    
-    # 4. Distribution of key variables - Fix the histogram visualizations
-    fig, axs = plt.subplots(2, 3, figsize=(16, 12))
-    
-    # Teacher salary distribution - improved formatting
-    axs[0,0].hist(df_merge['BTCHSAL'], bins=20, alpha=0.7, color='#1f77b4')
-    axs[0,0].set_title('Beginning Teacher Salary Distribution', fontsize=12)
-    axs[0,0].set_xlabel('Normalized Salary', fontsize=10)
-    axs[0,0].set_ylabel('Number of Schools', fontsize=10)
-    axs[0,0].grid(True, alpha=0.3)
-    axs[0,0].tick_params(axis='both', which='major', labelsize=9)
-    
-    axs[0,1].hist(df_merge['MTCHSAL'], bins=20, alpha=0.7, color='green')
-    axs[0,1].set_title('Mid-Career Teacher Salary Distribution', fontsize=12)
-    axs[0,1].set_xlabel('Normalized Salary', fontsize=10)
-    axs[0,1].set_ylabel('Number of Schools', fontsize=10)
-    axs[0,1].grid(True, alpha=0.3)
-    axs[0,1].tick_params(axis='both', which='major', labelsize=9)
-    
-    axs[0,2].hist(df_merge['HTCHSAL'], bins=20, alpha=0.7, color='red')
-    axs[0,2].set_title('High-Level Teacher Salary Distribution', fontsize=12)
-    axs[0,2].set_xlabel('Normalized Salary', fontsize=10)
-    axs[0,2].set_ylabel('Number of Schools', fontsize=10)
-    axs[0,2].grid(True, alpha=0.3)
-    axs[0,2].tick_params(axis='both', which='major', labelsize=9)
-    
-    # Test score distributions
-    axs[1,0].hist(df_merge['SMATH_Y2'].astype(float), bins=20, alpha=0.7, color='purple')
-    axs[1,0].set_title('State Math Score Distribution', fontsize=12)
-    axs[1,0].set_xlabel('Score', fontsize=10)
-    axs[1,0].set_ylabel('Number of Schools', fontsize=10)
-    axs[1,0].grid(True, alpha=0.3)
-    axs[1,0].tick_params(axis='both', which='major', labelsize=9)
-    
-    axs[1,1].hist(df_merge['SELA_Y2'].astype(float), bins=20, alpha=0.7, color='orange')
-    axs[1,1].set_title('State ELA Score Distribution', fontsize=12)
-    axs[1,1].set_xlabel('Score', fontsize=10)
-    axs[1,1].set_ylabel('Number of Schools', fontsize=10)
-    axs[1,1].grid(True, alpha=0.3)
-    axs[1,1].tick_params(axis='both', which='major', labelsize=9)
-    
-    # Fix the SED distribution visualization
-    axs[1,2].hist(df_merge['PERSD'].astype(float) * 100, bins=20, alpha=0.7, color='blue')
-    axs[1,2].set_title('Distribution of Socioeconomically Disadvantaged %', fontsize=12)
-    axs[1,2].set_xlabel('Percentage of Students', fontsize=10)
-    axs[1,2].set_ylabel('Number of Schools', fontsize=10)
-    axs[1,2].grid(True, alpha=0.3)
-    axs[1,2].tick_params(axis='both', which='major', labelsize=9)
-    
-    plt.tight_layout()
-    plt.savefig("../output/variable_distributions.png", dpi=300)
+    plt.savefig("output/test_scores_by_sed.png", dpi=300)
     plt.close()
     
     # 5. Create a more clear relationship visualization between SED and test scores
@@ -323,7 +274,7 @@ if __name__ == "__main__":
     plt.xlim(0, 100)
     
     plt.tight_layout()
-    plt.savefig("../output/sed_mathscores_relationship.png", dpi=300)
+    plt.savefig("output/sed_mathscores_relationship.png", dpi=300)
     plt.close()
 
     print("All visualizations have been saved to the output directory.")

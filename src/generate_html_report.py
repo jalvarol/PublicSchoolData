@@ -79,13 +79,28 @@ def generate_key_findings_html():
         "../output/correlation_matrix.png"
     ]
     
+    test_scores_by_sed_img_paths = [
+        f"{output_dir}/test_scores_by_sed.png",
+        "output/test_scores_by_sed.png",
+        "../output/test_scores_by_sed.png"
+    ]
+    test_scores_relationships_img_paths = [
+        f"{output_dir}/test_scores_relationships.png",
+        "output/test_scores_relationships.png",
+        "../output/test_scores_relationships.png"
+    ]
+    
     # Find the first existing image path
     sed_math_img = next((path for path in sed_math_img_paths if os.path.exists(path)), None)
     correlation_img = next((path for path in correlation_img_paths if os.path.exists(path)), None)
+    test_scores_by_sed_img = next((path for path in test_scores_by_sed_img_paths if os.path.exists(path)), None)
+    test_scores_relationships_img = next((path for path in test_scores_relationships_img_paths if os.path.exists(path)), None)
     
     # Get base64 encoded versions of the images if they exist
     sed_math_b64 = get_image_base64(sed_math_img) if sed_math_img else ""
     correlation_b64 = get_image_base64(correlation_img) if correlation_img else ""
+    test_scores_by_sed_b64 = get_image_base64(test_scores_by_sed_img) if test_scores_by_sed_img else ""
+    test_scores_relationships_b64 = get_image_base64(test_scores_relationships_img) if test_scores_relationships_img else ""
     
     # Generate the current date for the report
     report_date = datetime.now().strftime("%B %d, %Y")
@@ -327,9 +342,10 @@ def generate_key_findings_html():
                 
                 <div class="finding">
                     <h3>2. Teacher Salary Relationship</h3>
-                    <p>Higher teacher salaries show a modest positive correlation with test scores. 
-                    High-level teacher salaries correlate at approximately 0.18 with test scores, 
-                    suggesting that competitive compensation may contribute to student achievement.</p>
+                    <p>Higher teacher compensation appears to be associated with slightly better 
+                    academic outcomes, though the relationship is not strong. This may suggest that while pay
+                    contributes to performance, other factors—like absenteeism or socioeconomic status—have greater 
+                    influence.</p>
                 </div>
                 
                 <div class="finding">
@@ -340,10 +356,9 @@ def generate_key_findings_html():
                 </div>
                 
                 <div class="finding">
-                    <h3>4. Salary Structure Observations</h3>
-                    <p>There's a strong correlation (0.72-0.76) between beginning, mid-career, and high-level 
-                    teacher salaries, suggesting districts with higher starting salaries 
-                    tend to maintain competitive compensation throughout career progression.</p>
+                    <h3>4. English Learner Absence & Disadvantage</h3>
+                    <p>Chronic absence rates among English Learners are moderately correlated with both the percentage of socioeconomically 
+                    disadvantaged students (r ≈ 0.29) and lower test scores (r ≈ -0.39 for ELA, r ≈ -0.41 for Math). This suggests that schools with more disadvantaged students and higher English Learner absence face compounding challenges in academic achievement.</p>
                 </div>
                 
                 <div class="finding">
@@ -355,20 +370,30 @@ def generate_key_findings_html():
             </div>
             
             <h2>Data Visualizations</h2>
-            
             {f'''
             <div class="visualization">
                 <img src="data:image/png;base64,{sed_math_b64}" alt="Relationship between socioeconomic status and math scores">
                 <p class="caption">Figure 1: Relationship between socioeconomic status and math scores showing a strong negative correlation.</p>
             </div>
             ''' if sed_math_b64 else '<p>Socioeconomic relationship visualization not available.</p>'}
-            
             {f'''
             <div class="visualization">
                 <img src="data:image/png;base64,{correlation_b64}" alt="Correlation matrix of key variables">
                 <p class="caption">Figure 2: Correlation matrix showing relationships between various factors in the dataset.</p>
             </div>
             ''' if correlation_b64 else '<p>Correlation matrix visualization not available.</p>'}
+            {f'''
+            <div class="visualization">
+                <img src="data:image/png;base64,{test_scores_by_sed_b64}" alt="Test scores by SED bins">
+                <p class="caption">Figure 3: Average test scores by percentage of socioeconomically disadvantaged students (SED bins).</p>
+            </div>
+            ''' if test_scores_by_sed_b64 else '<p>Test scores by SED bins visualization not available.</p>'}
+            {f'''
+            <div class="visualization">
+                <img src="data:image/png;base64,{test_scores_relationships_b64}" alt="Test score relationships">
+                <p class="caption">Figure 4: Scatter plots showing relationships between teacher salaries, absence rates, and test scores.</p>
+            </div>
+            ''' if test_scores_relationships_b64 else '<p>Test score relationships visualization not available.</p>'}
             
             {variable_reference_html}
             
