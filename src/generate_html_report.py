@@ -63,7 +63,8 @@ def generate_key_findings_html():
     Returns:
         str: Path to the generated HTML file
     """
-    output_dir = ensure_output_dir()
+    output_dir = "output"
+    os.makedirs(output_dir, exist_ok=True)
     
     # Check for visualization files in both possible output locations
     sed_math_img_paths = [
