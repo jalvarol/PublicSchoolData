@@ -30,6 +30,11 @@ python src/DMProject.py
 if [ "$HTML_REPORT" = true ]; then
     echo "Generating HTML report..."
     python src/generate_html_report.py
+
+# Copy the HTML report to Vercel's public directory
+    mkdir -p public
+    cp output/school_data_report.html public/index.html
+    echo "Copied HTML report to public/index.html for Vercel deployment."
 fi
 
 echo "Analysis complete. Check the output directory for visualization results."
@@ -47,3 +52,5 @@ elif [ "$(expr substr $(uname -s) 1 10)" == "MINGW32_NT" ]; then  # Windows with
 fi
 
 echo "To generate HTML report, run: ./run.sh --html-report"
+
+
