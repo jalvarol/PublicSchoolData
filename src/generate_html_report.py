@@ -91,16 +91,10 @@ def generate_key_findings_html():
     ]
     
     # Find the first existing image path
-    sed_math_img = next((path for path in sed_math_img_paths if os.path.exists(path)), None)
-    correlation_img = next((path for path in correlation_img_paths if os.path.exists(path)), None)
-    test_scores_by_sed_img = next((path for path in test_scores_by_sed_img_paths if os.path.exists(path)), None)
-    test_scores_relationships_img = next((path for path in test_scores_relationships_img_paths if os.path.exists(path)), None)
-    
-    # Get base64 encoded versions of the images if they exist
-    sed_math_b64 = get_image_base64(sed_math_img) if sed_math_img else ""
-    correlation_b64 = get_image_base64(correlation_img) if correlation_img else ""
-    test_scores_by_sed_b64 = get_image_base64(test_scores_by_sed_img) if test_scores_by_sed_img else ""
-    test_scores_relationships_b64 = get_image_base64(test_scores_relationships_img) if test_scores_relationships_img else ""
+    sed_math_img = next((os.path.basename(path) for path in sed_math_img_paths if os.path.exists(path)), None)
+    correlation_img = next((os.path.basename(path) for path in correlation_img_paths if os.path.exists(path)), None)
+    test_scores_by_sed_img = next((os.path.basename(path) for path in test_scores_by_sed_img_paths if os.path.exists(path)), None)
+    test_scores_relationships_img = next((os.path.basename(path) for path in test_scores_relationships_img_paths if os.path.exists(path)), None)
     
     # Generate the current date for the report
     report_date = datetime.now().strftime("%B %d, %Y")
@@ -370,30 +364,22 @@ def generate_key_findings_html():
             </div>
             
             <h2>Data Visualizations</h2>
-            {f'''
-            <div class="visualization">
-                <img src="data:image/png;base64,{sed_math_b64}" alt="Relationship between socioeconomic status and math scores">
+            {f'''<div class="visualization">
+                <img src="{sed_math_img}" alt="Relationship between socioeconomic status and math scores">
                 <p class="caption">Figure 1: Relationship between socioeconomic status and math scores showing a strong negative correlation.</p>
-            </div>
-            ''' if sed_math_b64 else '<p>Socioeconomic relationship visualization not available.</p>'}
-            {f'''
-            <div class="visualization">
-                <img src="data:image/png;base64,{correlation_b64}" alt="Correlation matrix of key variables">
+            </div>''' if sed_math_img else '<p>Socioeconomic relationship visualization not available.</p>'}
+            {f'''<div class="visualization">
+                <img src="{correlation_img}" alt="Correlation matrix of key variables">
                 <p class="caption">Figure 2: Correlation matrix showing relationships between various factors in the dataset.</p>
-            </div>
-            ''' if correlation_b64 else '<p>Correlation matrix visualization not available.</p>'}
-            {f'''
-            <div class="visualization">
-                <img src="data:image/png;base64,{test_scores_by_sed_b64}" alt="Test scores by SED bins">
+            </div>''' if correlation_img else '<p>Correlation matrix visualization not available.</p>'}
+            {f'''<div class="visualization">
+                <img src="{test_scores_by_sed_img}" alt="Test scores by SED bins">
                 <p class="caption">Figure 3: Average test scores by percentage of socioeconomically disadvantaged students (SED bins).</p>
-            </div>
-            ''' if test_scores_by_sed_b64 else '<p>Test scores by SED bins visualization not available.</p>'}
-            {f'''
-            <div class="visualization">
-                <img src="data:image/png;base64,{test_scores_relationships_b64}" alt="Test score relationships">
+            </div>''' if test_scores_by_sed_img else '<p>Test scores by SED bins visualization not available.</p>'}
+            {f'''<div class="visualization">
+                <img src="{test_scores_relationships_img}" alt="Test score relationships">
                 <p class="caption">Figure 4: Scatter plots showing relationships between teacher salaries, absence rates, and test scores.</p>
-            </div>
-            ''' if test_scores_relationships_b64 else '<p>Test score relationships visualization not available.</p>'}
+            </div>''' if test_scores_relationships_img else '<p>Test score relationships visualization not available.</p>'}
             
             {variable_reference_html}
             

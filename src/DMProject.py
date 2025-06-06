@@ -11,9 +11,6 @@ import os
 # Import the data preparation module
 from data_preparation import load_data
 
-# Create output directory at the beginning to avoid FileNotFoundError
-os.makedirs("../output", exist_ok=True)
-
 # Load and prepare data using the data_preparation module
 print("Loading and preparing data...")
 df_merge = load_data()
